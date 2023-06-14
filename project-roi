@@ -1,0 +1,59 @@
+|year| project 1 cashflow | project 2 CF ...|
+  0       -(investment)
+  1         CF
+  2         CF
+  3         CF
+______________________________________________
+VAN |
+TRI |
+indice de rentabilité |
+délai de récupération (année) |
+délai de récupération actualisé (année) |
+
+
+
+_______________________________________________________________________________________________
+Function IndiceRentabilite(flux As Range, taux As Double, investissement As Double) As Double
+    Dim Cell As Range
+    Dim i As Integer
+    Dim sommePV As Double
+    
+    i = 1
+    sommePV = 0
+    For Each Cell In flux
+        sommePV = sommePV + Cell.Value / ((1 + taux) ^ i)
+        i = i + 1
+    Next Cell
+    
+    IndiceRentabilite = sommePV / Abs(investissement)
+End Function
+
+_______________________________________________________________________________________________
+Function DelaiRecuperation(flux As Range, investissement As Double) As Double
+ ' DelaiRecuperation calcule le délai de récupération pour une série de flux de trésorerie.
+    ' flux: La plage de cellules contenant les flux de trésorerie. Ne pas mettre l'investissement dans les flux.
+    ' investissement: mettre le montant de l'investissement
+    
+    Dim Cell As Range
+    Dim i As Integer
+    Dim sommeFlux As Double
+    
+    i = 0
+    sommeFlux = 0
+    For Each Cell In flux
+        sommeFlux = sommeFlux + Cell.Value
+        i = i + 1
+        If sommeFlux >= Abs(investissement) Then
+            DelaiRecuperation = i - 1 + (Abs(investissement) - (sommeFlux - Cell.Value)) / Cell.Value
+            Exit Function
+        End If
+    Next Cell
+    
+    DelaiRecuperation = "Non défini"
+End Function
+
+___________________________________________________________________________________________________
+
+
+
+
