@@ -1,0 +1,94 @@
+' Public = accessible à tous les modules. (Utiliser surtout pour les utiliser à l'intérieur des private sub)
+' Private = seulement un module spécifique. (Utilisation pour les boutons par exemple [Call public sub])
+
+' Fonction qui nettoie seulement une colonne mentionner.
+Public Sub NettoyerColonne(nomFeuille As String, refCell As String)
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets(nomFeuille)
+
+    Dim cell As Range
+    Dim debut As Range
+    Dim derniereLigne As Long
+    Dim impairTrouve As Boolean
+
+    ' Définir la cellule de début
+    Set debut = ws.Range(refCell)
+
+    ' Trouver la dernière ligne de la colonne avec des données
+    derniereLigne = ws.Cells(ws.Rows.Count, debut.Column).End(xlUp).Row
+
+    ' Initialiser l'indicateur impairTrouve
+    impairTrouve = False
+
+    ' Configuration de la gestion d'erreur
+    On Error GoTo ErrorHandler
+
+    ' Boucler à partir de la cellule de début jusqu'à la dernière ligne avec des données
+    For Each cell In ws.Range(debut, ws.Cells(derniereLigne, debut.Column))
+        If Not IsEmpty(cell.Value) Then
+            If cell.Value Mod 2 <> 0 Then
+                impairTrouve = True  ' Un chiffre impair a été trouvé
+                cell.Interior.Color = RGB(255, 100, 100) ' Mise en surbrillance de la cellule
+                GoTo ErrorHandler  ' Aller à la gestion d'erreur
+            End If
+            cell.Interior.Color = RGB(0, 255, 0)
+        End If
+    Next cell
+
+    ' Vérification de l'indicateur après la boucle
+    If Not impairTrouve Then
+        MsgBox "Toutes les longueurs sont correctes. Aucun chiffre impair trouvé.", vbInformation, "Vérification Complète"
+    End If
+
+    Exit Sub  ' S'assurer de ne pas exécuter la partie ErrorHandler si tout est correct
+
+ErrorHandler:
+    Dim Rep As Integer
+    Rep = MsgBox("Un chiffre impair a été trouvé dans la cellule " & cell.Address & ". Voulez-vous y aller ?", vbExclamation + vbYesNo, "Erreur Impair")
+    If Rep = vbYes Then
+        Application.Goto ws.Range(cell.Address)
+    End If
+End Sub
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+' Fonction qui va copier coller des donnees vers un autre excel sheet.
+Public Sub CopierDonneesDynamiques(nomFeuilleSource As String, celluleDebut As String, nomFeuilleDestination As String, colonneDestination As String)
+    Dim wsSource As Worksheet
+    Dim wsDestination As Worksheet
+    Dim debut As Range
+    Dim derniereCellule As Range
+    Dim plageACopier As Range
+    Dim celluleDest As Range
+    Dim premiereCelluleVide As Range
+
+    ' Définir la feuille source et la feuille de destination
+    Set wsSource = ThisWorkbook.Sheets(nomFeuilleSource)
+    Set wsDestination = ThisWorkbook.Sheets(nomFeuilleDestination)
+
+    ' Définir la cellule de départ
+    Set debut = wsSource.Range(celluleDebut)
+    
+    ' Trouver la dernière cellule de la plage (vers le bas et vers la droite)
+    Set derniereCellule = wsSource.Cells(debut.Row, wsSource.Columns.Count).End(xlToLeft).End(xlDown)
+    
+    ' Définir la plage à copier
+    Set plageACopier = wsSource.Range(debut, derniereCellule)
+
+    ' Trouver la première cellule vide dans la colonne de destination
+    Set premiereCelluleVide = wsDestination.Columns(colonneDestination).Find(What:="", After:=wsDestination.Cells(1, colonneDestination), LookIn:=xlFormulas, LookAt:=xlWhole)
+
+    ' Si aucune cellule vide n'est trouvée, utiliser la dernière cellule + 1 dans la colonne
+    If premiereCelluleVide Is Nothing Then
+        Set premiereCelluleVide = wsDestination.Cells(wsDestination.Rows.Count, colonneDestination).End(xlUp).Offset(1, 0)
+    End If
+
+    ' Copier et coller les données
+    plageACopier.Copy
+    premiereCelluleVide.PasteSpecial Paste:=xlPasteValues
+    MsgBox "Les données ont été envoyer vers la base de données avec succès.", vbInformation, "Envoie Compléter"
+
+    ' Supprimer le contour de sélection
+    Application.CutCopyMode = False
+End Sub
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
