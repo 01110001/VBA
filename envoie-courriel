@@ -1,0 +1,21 @@
+Public Sub EnvoyerEmail(mails As String)
+    Dim OutlookApp As Object
+    Dim OutlookMail As Object
+    Set OutlookApp = CreateObject("Outlook.Application")
+    Set OutlookMail = OutlookApp.CreateItem(0)
+    
+    With OutlookMail
+        .To = mails
+        .CC = ""
+        .BCC = ""
+        .Subject = "Le Séchoir a été modifié"
+        .Body = "Le " & ActiveSheet.Name & " a été modifié"
+        .Send   ' Ou utilisez .Display pour montrer directement.
+    End With
+    
+    ' Afficher un message de confirmation
+    MsgBox "Le courriel a été envoyé avec succès!", vbInformation, "Confirmation d'envoi"
+    
+    Set OutlookMail = Nothing
+    Set OutlookApp = Nothing
+End Sub
