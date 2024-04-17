@@ -1,0 +1,52 @@
+Public ChangesLog As Collection ' This set a global variable. Put at the top of the module.
+
+
+' This Sub write the log
+  Sub WriteLog()
+      Dim filePath As String
+      Dim fileNo As Integer
+      Dim logEntry As Variant
+  
+      ' Chemin du fichier log
+      filePath = "CHANGE THE PATH HERE/log.txt"
+      
+      ' Trouver un numéro de fichier libre
+      fileNo = FreeFile()
+      
+      ' Ouvrir le fichier en mode ajout
+      Open filePath For Append As #fileNo
+      
+      ' Écrire dans le fichier chaque entrée du log
+      For Each logEntry In ChangesLog
+          Print #fileNo, logEntry
+      Next logEntry
+      
+      ' Fermer le fichier
+      Close #fileNo
+  End Sub
+  
+  
+  Sub InitializeLog()
+      Set ChangesLog = New Collection
+  End Sub
+
+
+' Double click the workbook file and insert those sub
+
+  ' Save the change into log.txt
+  Private Sub Workbook_BeforeClose(Cancel As Boolean)
+      Call WriteLog
+  End Sub
+  
+  ' Register the change on workbook open
+  Private Sub Workbook_Open()
+      Call InitializeLog
+  End Sub
+
+' Insert this code into the sheet you want to register the change of value.
+  Private Sub Worksheet_Change(ByVal Target As Range)
+      Dim ChangeInfo As String
+      ChangeInfo = "Modification le " & Now & " - Cellule: " & Target.Address & " Valeur nouvelle: " & Target.Value
+      ChangesLog.Add ChangeInfo
+  End Sub
+
