@@ -1,3 +1,5 @@
+Option Explicit ' Make sure all variable are declared
+
 Public ChangesLog As Collection ' This set a global variable. Put at the top of the module.
 
 
