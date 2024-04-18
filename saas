@@ -1,6 +1,10 @@
+
+
 ' Public = accessible à tous les modules. (Utiliser surtout pour les utiliser à l'intérieur des private sub)
 ' Private = seulement un module spécifique. (Utilisation pour les boutons par exemple [Call public sub])
 
+
+Option Explicit ' Make sure all variable are declared
 ' Fonction qui nettoie seulement une colonne mentionner.
 Public Sub NettoyerColonne(nomFeuille As String, refCell As String)
     Dim ws As Worksheet
