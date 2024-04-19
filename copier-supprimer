@@ -1,0 +1,83 @@
+Public Sub Send(nomFeuilleSource As String, celluleDebut As String, nomFeuilleDestination As String, colonneDestination As String)
+    Dim wsSource As Worksheet
+    Dim wsDestination As Worksheet
+    Dim debut As Range
+    Dim derniereCellule As Range
+    Dim plageACopier As Range
+    Dim celluleDest As Range
+    Dim premiereCelluleVide As Range
+
+    ' Définir la feuille source et la feuille de destination
+    Set wsSource = ThisWorkbook.Sheets(nomFeuilleSource)
+    Set wsDestination = ThisWorkbook.Sheets(nomFeuilleDestination)
+
+    ' Définir la cellule de départ
+    Set debut = wsSource.Range(celluleDebut)
+    
+    ' Trouver la dernière cellule de la plage (vers le bas et vers la droite)
+    Set derniereCellule = wsSource.Cells(debut.Row, wsSource.Columns.count).End(xlToLeft).End(xlDown)
+    
+    ' Définir la plage à copier
+    Set plageACopier = wsSource.Range(debut, derniereCellule)
+
+    ' Trouver la première cellule vide dans la colonne de destination
+    Set premiereCelluleVide = wsDestination.Columns(colonneDestination).Find(What:="", After:=wsDestination.Cells(1, colonneDestination), LookIn:=xlFormulas, LookAt:=xlWhole)
+
+    ' Si aucune cellule vide n'est trouvée, utiliser la dernière cellule + 1 dans la colonne
+    If premiereCelluleVide Is Nothing Then
+        Set premiereCelluleVide = wsDestination.Cells(wsDestination.Rows.count, colonneDestination).End(xlUp).Offset(1, 0)
+    End If
+
+    ' Copier et coller les données
+    plageACopier.Copy
+    premiereCelluleVide.PasteSpecial Paste:=xlPasteValuesAndNumberFormats
+    MsgBox "Les données ont été envoyer vers la base de données avec succès.", vbInformation, "Envoie Compléter"
+
+    ' Supprimer le contour de sélection
+    Application.CutCopyMode = False
+End Sub
+
+
+' sub pour supprimer des données
+Public Sub Delete(feuilAsupprimer As String)
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets(feuilAsupprimer) ' Assurez-vous que c'est le nom correct de la feuille
+    Dim dateASupprimer As Date
+    Dim i As Long
+    Dim plageSuppression As Range
+
+    ' Remplacer par la méthode de récupération de la date de votre choix
+    ' Ici, nous définissons manuellement la date pour la démonstration
+    ' Demander à l'utilisateur d'entrer la date à supprimer
+    Dim strDateASupprimer As String
+    strDateASupprimer = InputBox("Entrez la date à supprimer (format AAAA-MM-JJ):", "Supprimer les données")
+
+    ' Convertir la chaîne de caractères en date
+    dateASupprimer = DateValue(strDateASupprimer)
+
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+
+    ' Commencez par la dernière ligne et remontez pour éviter les problèmes de décalage des lignes lors de la suppression
+    For i = ws.Cells(ws.Rows.count, "A").End(xlUp).Row To 2 Step -1
+        ' Supposons que la date est dans la colonne A (1)
+        If ws.Cells(i, 2).Value = dateASupprimer Then
+            If plageSuppression Is Nothing Then
+                Set plageSuppression = ws.Rows(i)
+            Else
+                Set plageSuppression = Union(plageSuppression, ws.Rows(i))
+            End If
+        End If
+    Next i
+
+    ' Supprimez toutes les lignes en une fois pour éviter de supprimer dans une boucle, ce qui est plus performant
+    If Not plageSuppression Is Nothing Then
+        plageSuppression.Delete
+    End If
+
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+
+    MsgBox "Toutes les lignes avec la date " & Format(dateASupprimer, "yyyy-mm-dd") & " ont été supprimées."
+
+End Sub
